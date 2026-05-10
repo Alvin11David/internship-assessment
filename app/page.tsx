@@ -207,7 +207,7 @@ export default function Home() {
             <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
 
             <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-              ✨ Powered by <strong>Sunbird AI</strong> APIs
+              Powered by <strong>Sunbird AI</strong> APIs
             </p>
           </div>
         </div>

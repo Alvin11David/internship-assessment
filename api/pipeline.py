@@ -47,6 +47,34 @@ class ProcessingPipeline:
         
         return {"valid": True}
     
+    def _extract_text_response(self, response: Dict[str, Any], fallback: str = "") -> str:
+        """
+        Extracts text from an inference API response.
+        Supports common response shapes from Sunbird and similar model endpoints.
+        """
+        if not isinstance(response, dict):
+            return fallback
+
+        for key in ("translation", "summary", "text", "result", "output"):
+            if response.get(key):
+                return response.get(key)
+
+        if isinstance(response.get("data"), list) and response["data"]:
+            first = response["data"][0]
+            if isinstance(first, dict):
+                for key in ("translation", "summary", "text", "result", "output"):
+                    if first.get(key):
+                        return first.get(key)
+            elif isinstance(first, str):
+                return first
+
+        if isinstance(response.get("choices"), list) and response["choices"]:
+            first_choice = response["choices"][0]
+            if isinstance(first_choice, dict) and first_choice.get("text"):
+                return first_choice.get("text")
+
+        return fallback
+
     def process_text_input(self, text: str, target_language: str) -> Dict[str, Any]:
         """
         Process text input through pipeline: Summarize → Translate → TTS.
@@ -74,13 +102,13 @@ class ProcessingPipeline:
             # Step 1: Summarize
             print(f"Summarizing text...")
             summary_response = self.client.summarize(text)
-            summary = summary_response.get("summary", summary_response.get("text", text[:100]))
+            summary = self._extract_text_response(summary_response, text[:100])
             results["pipeline"]["summary"] = summary
             
             # Step 2: Translate
             print(f"Translating to {target_language}...")
             translation_response = self.client.translate(summary, target_language)
-            translated = translation_response.get("translation", translation_response.get("text", summary))
+            translated = self._extract_text_response(translation_response, summary)
             results["pipeline"]["translation"] = translated
             
             # Step 3: Text-to-Speech
@@ -123,13 +151,13 @@ class ProcessingPipeline:
             # Step 1: Transcribe
             print(f"Transcribing audio...")
             transcription_response = self.client.transcribe(audio_file_path)
-            transcript = transcription_response.get("transcription", transcription_response.get("text", ""))
+            transcript = self._extract_text_response(transcription_response, "")
             results["pipeline"]["transcript"] = transcript
             
             # Step 2: Summarize
             print(f"Summarizing transcript...")
             summary_response = self.client.summarize(transcript)
-            summary = summary_response.get("summary", summary_response.get("text", transcript[:100]))
+            summary = self._extract_text_response(summary_response, transcript[:100])
             results["pipeline"]["summary"] = summary
             
             # Step 3: Translate

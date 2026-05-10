@@ -13,18 +13,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with actual Sunbird AI pipeline
-    // For now, returning a mock response
-    const mockResult = {
-      pipeline: {
-        transcript: 'Transcribed audio text...',
-        summary: 'Summary of audio content...',
-        translation: `Translation to ${targetLanguage}...`,
-        audio: null,
-      },
-    };
+    // Forward to Python backend
+    const backendFormData = new FormData();
+    backendFormData.append('audio', audioFile);
+    backendFormData.append('target_language', targetLanguage);
 
-    return NextResponse.json(mockResult);
+    const response = await fetch('http://localhost:5000/api/process-audio', {
+      method: 'POST',
+      body: backendFormData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData.error || 'Failed to process audio' },
+        { status: response.status }
+      );
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error processing audio:', error);
     return NextResponse.json(

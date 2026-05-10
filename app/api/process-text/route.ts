@@ -12,18 +12,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with actual Sunbird AI pipeline
-    // For now, returning a mock response
-    const mockResult = {
-      pipeline: {
-        transcript: text,
-        summary: `Summary of: ${text.substring(0, 50)}...`,
-        translation: `Translation to ${target_language}: ${text}`,
-        audio: null,
+    // Call Python backend
+    const response = await fetch('http://localhost:5000/api/process-text', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    };
+      body: JSON.stringify({ text, target_language }),
+    });
 
-    return NextResponse.json(mockResult);
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData.error || 'Failed to process text' },
+        { status: response.status }
+      );
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error processing text:', error);
     return NextResponse.json(

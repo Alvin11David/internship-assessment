@@ -185,15 +185,15 @@ export default function Home() {
         {/* Information Section */}
         <div className="card">
           <h2>ℹ️ How it works</h2>
-          <div style={{ lineHeight: "1.8", color: "#666" }}>
-            <h4 style={{ color: "#333", marginTop: "10px" }}>
+          <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
               Text Input Pipeline:
             </h4>
             <p>1. Summarize the text</p>
             <p>2. Translate summary to selected language</p>
             <p>3. Generate audio of translation</p>
 
-            <h4 style={{ color: "#333", marginTop: "15px" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
               Audio Input Pipeline:
             </h4>
             <p>1. Transcribe audio to text</p>
@@ -201,12 +201,12 @@ export default function Home() {
             <p>3. Translate summary to selected language</p>
             <p>4. Generate audio of translation</p>
 
-            <h4 style={{ color: "#333", marginTop: "15px" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
               Supported Languages:
             </h4>
             <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
 
-            <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "#999" }}>
+            <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
               ✨ Powered by <strong>Sunbird AI</strong> APIs
             </p>
           </div>

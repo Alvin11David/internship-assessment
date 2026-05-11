@@ -55,15 +55,14 @@ class SunbirdClient:
 
         return fallback
     
-    def transcribe(self, audio_file_path: str, language: str = "en") -> Dict[str, Any]:
+    def transcribe(self, audio_file_path: str, language: str = "eng") -> Dict[str, Any]:
         """
         Transcribe audio file to text using Speech-to-Text API.
         """
         url = f"{self.BASE_URL}/tasks/stt"
         with open(audio_file_path, 'rb') as f:
             files = {'audio': f}
-            data = {'language': language}
-            response = requests.post(url, headers=self.headers, files=files, data=data)
+            response = requests.post(url, headers=self.headers, files=files)
             response.raise_for_status()
             return response.json()
     
@@ -85,12 +84,24 @@ class SunbirdClient:
         """
         Translate text to a target language.
         """
-        url = f"{self.BASE_URL}/tasks/translate"
-        payload = {
-            "text": text,
-            "target_language": target_language
+        # Map language codes to full names for the instruction
+        language_names = {
+            "lug": "Luganda",
+            "nyn": "Runyankole", 
+            "teo": "Ateso",
+            "lgg": "Lugbara",
+            "ach": "Acholi"
         }
-        response = requests.post(url, headers={**self.headers, "Content-Type": "application/json"}, json=payload)
+        
+        target_name = language_names.get(target_language, target_language)
+        
+        url = f"{self.BASE_URL}/tasks/sunflower_simple"
+        payload = {
+            "instruction": f"Translate '{text}' to {target_name}",
+            "model_type": "qwen",
+            "temperature": 0.1
+        }
+        response = requests.post(url, headers=self.headers, data=payload)
         response.raise_for_status()
         return response.json()
     

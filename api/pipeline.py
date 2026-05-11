@@ -11,13 +11,13 @@ from sunbird_client import SunbirdClient
 class ProcessingPipeline:
     """Orchestrates the AI processing pipeline."""
     
-    # Supported target languages for translation
+    # Supported target languages for translation (name -> code)
     SUPPORTED_LANGUAGES = {
-        "luganda": "Luganda",
-        "runyankole": "Runyankole",
-        "ateso": "Ateso",
-        "lugbara": "Lugbara",
-        "acholi": "Acholi"
+        "luganda": "lug",
+        "runyankole": "nyn",
+        "ateso": "teo",
+        "lugbara": "lgg",
+        "acholi": "ach"
     }
     
     MAX_AUDIO_DURATION_SECONDS = 300  # 5 minutes
@@ -55,14 +55,19 @@ class ProcessingPipeline:
         if not isinstance(response, dict):
             return fallback
 
-        for key in ("translation", "summary", "text", "result", "output"):
+        # Handle STT response format: {"output": {"text": "...", "language": "..."}}
+        output = response.get("output")
+        if isinstance(output, dict) and output.get("text"):
+            return output["text"]
+
+        for key in ("translation", "summary", "text", "result", "response"):
             if response.get(key):
                 return response.get(key)
 
         if isinstance(response.get("data"), list) and response["data"]:
             first = response["data"][0]
             if isinstance(first, dict):
-                for key in ("translation", "summary", "text", "result", "output"):
+                for key in ("translation", "summary", "text", "result", "response"):
                     if first.get(key):
                         return first.get(key)
             elif isinstance(first, str):
@@ -99,11 +104,16 @@ class ProcessingPipeline:
         }
         
         try:
-            # Step 1: Summarize
-            print(f"Summarizing text...")
-            summary_response = self.client.summarize(text)
-            summary = self._extract_text_response(summary_response, text[:100])
-            results["pipeline"]["summary"] = summary
+            # Step 1: Summarize (skip for short text < 100 chars)
+            if len(text) > 100:
+                print(f"Summarizing text...")
+                summary_response = self.client.summarize(text)
+                summary = self._extract_text_response(summary_response, text[:100])
+                results["pipeline"]["summary"] = summary
+            else:
+                print(f"Text is short, skipping summarization...")
+                summary = text
+                results["pipeline"]["summary"] = summary
             
             # Step 2: Translate
             print(f"Translating to {target_language}...")
@@ -163,7 +173,7 @@ class ProcessingPipeline:
             # Step 3: Translate
             print(f"Translating to {target_language}...")
             translation_response = self.client.translate(summary, target_language)
-            translated = translation_response.get("translation", translation_response.get("text", summary))
+            translated = self._extract_text_response(translation_response, summary)
             results["pipeline"]["translation"] = translated
             
             # Step 4: Text-to-Speech

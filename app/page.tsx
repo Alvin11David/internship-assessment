@@ -61,7 +61,6 @@ export default function Home() {
           ".button",
           {
             scale: 0.97,
-            opacity: 0,
             duration: 0.4,
           },
           "-=0.3",

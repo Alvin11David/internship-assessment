@@ -571,11 +571,22 @@ body::after {
 }
 
 .button:disabled {
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 0, 0.24),
+    rgba(255, 142, 37, 0.18)
+  );
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 107, 0, 0.18);
+  cursor: not-allowed;
+  border: 1px solid rgba(255, 107, 0, 0.35);
+}
+
+:root[data-theme="light"] .button:disabled {
+  background: rgba(255, 107, 0, 0.08);
   color: var(--text-muted);
   box-shadow: none;
-  cursor: not-allowed;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 107, 0, 0.18);
 }
 
 /* Loading Animation */

@@ -79,13 +79,16 @@ export async function sunbirdPost(path: string, init: RequestInit = {}) {
 export async function sunbirdFormPost(
   path: string,
   fields: Record<string, string>,
+  init: RequestInit = {},
 ) {
   const body = new URLSearchParams(fields);
 
   return sunbirdPost(path, {
+    ...init,
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
+      ...(init.headers || {}),
     },
     body,
   });
@@ -94,11 +97,14 @@ export async function sunbirdFormPost(
 export async function sunbirdJsonPost(
   path: string,
   payload: Record<string, unknown>,
+  init: RequestInit = {},
 ) {
   return sunbirdPost(path, {
+    ...init,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(init.headers || {}),
     },
     body: JSON.stringify(payload),
   });

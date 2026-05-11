@@ -6,6 +6,23 @@ import {
   sunbirdPost,
 } from "../sunbird";
 
+const REQUEST_BUDGET_MS = 270_000;
+const TRANSLATION_TIMEOUT_CAP_MS = 180_000;
+const TTS_TIMEOUT_CAP_MS = 90_000;
+
+function remainingBudgetMs(startedAt: number) {
+  return REQUEST_BUDGET_MS - (Date.now() - startedAt);
+}
+
+function startStageTimeout(timeoutMs: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return {
+    signal: controller.signal,
+    clear: () => clearTimeout(timer),
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const totalStart = Date.now();
@@ -34,7 +51,10 @@ export async function POST(request: NextRequest) {
         const elapsed = Date.now() - summaryStart;
         console.log("summary failed after ms:", elapsed);
         return NextResponse.json(
-          { error: errorData || "Failed to summarize text", timings: { summaryTimeMs: elapsed } },
+          {
+            error: errorData || "Failed to summarize text",
+            timings: { summaryTimeMs: elapsed },
+          },
           { status: summaryResponse.status },
         );
       }
@@ -46,22 +66,81 @@ export async function POST(request: NextRequest) {
 
     const targetName = resolveLanguageName(target_language);
 
-    const translationStart = Date.now();
-    const translationResponse = await sunbirdFormPost(
-      "/tasks/sunflower_simple",
-      {
-        instruction: `Translate '${summary}' to ${targetName}`,
-        model_type: "qwen",
-        temperature: "0.1",
-      },
+    const translationBudgetMs = Math.min(
+      TRANSLATION_TIMEOUT_CAP_MS,
+      remainingBudgetMs(totalStart),
     );
+    if (translationBudgetMs <= 2_000) {
+      const totalTimeMs = Date.now() - totalStart;
+      return NextResponse.json({
+        input: text,
+        target_language,
+        pipeline: {
+          summary,
+          translation: summary,
+          audio: null,
+        },
+        warning:
+          "Skipped translation/audio because request time budget was exhausted.",
+        timings: {
+          summaryTimeMs,
+          translationTimeMs: 0,
+          ttsTimeMs: 0,
+          totalTimeMs,
+        },
+      });
+    }
+
+    const translationTimeout = startStageTimeout(translationBudgetMs);
+    const translationStart = Date.now();
+    let translationResponse: Response;
+    try {
+      translationResponse = await sunbirdFormPost(
+        "/tasks/sunflower_simple",
+        {
+          instruction: `Translate '${summary}' to ${targetName}`,
+          model_type: "qwen",
+          temperature: "0.1",
+        },
+        { signal: translationTimeout.signal },
+      );
+    } catch (error) {
+      translationTimeout.clear();
+      const translationTimeMs = Date.now() - translationStart;
+      const totalTimeMs = Date.now() - totalStart;
+      if (error instanceof Error && error.name === "AbortError") {
+        return NextResponse.json({
+          input: text,
+          target_language,
+          pipeline: {
+            summary,
+            translation: summary,
+            audio: null,
+          },
+          warning:
+            "Translation exceeded time budget. Returned summary without audio.",
+          timings: {
+            summaryTimeMs,
+            translationTimeMs,
+            ttsTimeMs: 0,
+            totalTimeMs,
+          },
+        });
+      }
+      throw error;
+    } finally {
+      translationTimeout.clear();
+    }
 
     if (!translationResponse.ok) {
       const errorData = await translationResponse.text();
       const elapsed = Date.now() - translationStart;
       console.log("translation failed after ms:", elapsed);
       return NextResponse.json(
-        { error: errorData || "Failed to translate text", timings: { translationTimeMs: elapsed } },
+        {
+          error: errorData || "Failed to translate text",
+          timings: { translationTimeMs: elapsed },
+        },
         { status: translationResponse.status },
       );
     }
@@ -70,24 +149,82 @@ export async function POST(request: NextRequest) {
     const translationTimeMs = Date.now() - translationStart;
     const translated = extractTextResponse(translationPayload, summary);
 
+    const ttsBudgetMs = Math.min(
+      TTS_TIMEOUT_CAP_MS,
+      remainingBudgetMs(totalStart),
+    );
+    if (ttsBudgetMs <= 2_000) {
+      const totalTimeMs = Date.now() - totalStart;
+      return NextResponse.json({
+        input: text,
+        target_language,
+        pipeline: {
+          summary,
+          translation: translated,
+          audio: null,
+        },
+        warning:
+          "Skipped audio generation because request time budget was low.",
+        timings: {
+          summaryTimeMs,
+          translationTimeMs,
+          ttsTimeMs: 0,
+          totalTimeMs,
+        },
+      });
+    }
+
+    const ttsTimeout = startStageTimeout(ttsBudgetMs);
     const ttsStart = Date.now();
-    const ttsResponse = await sunbirdPost("/tasks/modal/tts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: translated,
-        response_mode: "url",
-      }),
-    });
+    let ttsResponse: Response;
+    try {
+      ttsResponse = await sunbirdPost("/tasks/modal/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: translated,
+          response_mode: "url",
+        }),
+        signal: ttsTimeout.signal,
+      });
+    } catch (error) {
+      ttsTimeout.clear();
+      const ttsTimeMs = Date.now() - ttsStart;
+      const totalTimeMs = Date.now() - totalStart;
+      if (error instanceof Error && error.name === "AbortError") {
+        return NextResponse.json({
+          input: text,
+          target_language,
+          pipeline: {
+            summary,
+            translation: translated,
+            audio: null,
+          },
+          warning: "Audio generation exceeded time budget.",
+          timings: {
+            summaryTimeMs,
+            translationTimeMs,
+            ttsTimeMs,
+            totalTimeMs,
+          },
+        });
+      }
+      throw error;
+    } finally {
+      ttsTimeout.clear();
+    }
 
     if (!ttsResponse.ok) {
       const errorData = await ttsResponse.text();
       const ttsElapsed = Date.now() - ttsStart;
       console.log("tts failed after ms:", ttsElapsed);
       return NextResponse.json(
-        { error: errorData || "Failed to generate audio", timings: { ttsTimeMs: ttsElapsed } },
+        {
+          error: errorData || "Failed to generate audio",
+          timings: { ttsTimeMs: ttsElapsed },
+        },
         { status: ttsResponse.status },
       );
     }

@@ -10,6 +10,14 @@ interface ProcessResult {
     translation?: string;
     audio?: any;
   };
+  warning?: string;
+  timings?: {
+    transcriptionTimeMs?: number;
+    summaryTimeMs?: number;
+    translationTimeMs?: number;
+    ttsTimeMs?: number;
+    totalTimeMs?: number;
+  };
   error?: string;
 }
 
@@ -286,6 +294,30 @@ export default function Home() {
       {/* Results Section */}
       {result && !result.error && (
         <div className="results">
+          {result.warning && (
+            <div className="result-section">
+              <h3>⚠️ Notice</h3>
+              <div className="result-text">{result.warning}</div>
+            </div>
+          )}
+
+          {result.timings && (
+            <div className="result-section">
+              <h3>⏱️ Timings</h3>
+              <div className="result-text">
+                <div>
+                  Transcription: {result.timings.transcriptionTimeMs ?? 0} ms
+                </div>
+                <div>Summary: {result.timings.summaryTimeMs ?? 0} ms</div>
+                <div>
+                  Translation: {result.timings.translationTimeMs ?? 0} ms
+                </div>
+                <div>TTS: {result.timings.ttsTimeMs ?? 0} ms</div>
+                <div>Total: {result.timings.totalTimeMs ?? 0} ms</div>
+              </div>
+            </div>
+          )}
+
           {result.pipeline.transcript && (
             <div className="result-section">
               <h3>🎤 Transcript</h3>

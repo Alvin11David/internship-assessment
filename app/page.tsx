@@ -196,7 +196,17 @@ export default function Home() {
                 </label>
               </div>
               {audioFile && (
-                <div className="file-name">📁 {audioFile.name}</div>
+                <div className="file-name">
+                  <span>📁 {audioFile.name}</span>
+                  <button
+                    className="file-delete-btn"
+                    onClick={() => setAudioFile(null)}
+                    title="Delete audio file"
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                </div>
               )}
             </div>
           )}

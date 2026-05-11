@@ -8,11 +8,5 @@
     "api/**/*.py": {
       "runtime": "python3.11"
     }
-  },
-  "env": [
-    {
-      "key": "SUNBIRD_API_TOKEN",
-      "description": "Your Sunbird AI API token (get from https://app.sunbird.ai/)"
-    }
-  ]
+  }
 }

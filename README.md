@@ -1,5 +1,6 @@
 # Sunbird AI Internship Assessment Exercise
 
+
 This assessment consists of 3 parts:
 
 1. ✅ **Programming exercises** — implement `collatz()` and `distinct_numbers()` functions

@@ -28,9 +28,11 @@ export default function Home() {
   // Initialize theme from localStorage and system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    
+
     setTheme(initialTheme);
     document.documentElement.setAttribute("data-theme", initialTheme);
   }, []);
@@ -54,15 +56,19 @@ export default function Home() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
 
     if (dropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
     }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,7 +127,11 @@ export default function Home() {
   return (
     <div className="container">
       <div className="header">
-        <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        >
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
         <h1>🌻 Sunbird AI GenAI App</h1>
@@ -260,7 +270,13 @@ export default function Home() {
             </h4>
             <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
 
-            <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+            <p
+              style={{
+                marginTop: "15px",
+                fontSize: "0.9rem",
+                color: "var(--text-muted)",
+              }}
+            >
               Powered by <strong>Sunbird AI</strong> APIs
             </p>
           </div>

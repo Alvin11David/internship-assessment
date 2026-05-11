@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractTextResponse, resolveLanguageName, sunbirdPost } from "../sunbird";
+import {
+  extractTextResponse,
+  resolveLanguageName,
+  sunbirdFormPost,
+  sunbirdPost,
+} from "../sunbird";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!audioFile || !targetLanguage) {
       return NextResponse.json(
         { error: "Missing required fields: audio, target_language" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -18,15 +23,15 @@ export async function POST(request: NextRequest) {
     transcriptionFormData.append("audio", audioFile);
 
     const transcriptionResponse = await sunbirdPost("/tasks/stt", {
-      method: 'POST',
+      method: "POST",
       body: transcriptionFormData,
     });
 
     if (!transcriptionResponse.ok) {
       const errorData = await transcriptionResponse.text();
       return NextResponse.json(
-        { error: errorData || 'Failed to transcribe audio' },
-        { status: transcriptionResponse.status }
+        { error: errorData || "Failed to transcribe audio" },
+        { status: transcriptionResponse.status },
       );
     }
 
@@ -34,46 +39,40 @@ export async function POST(request: NextRequest) {
     const transcript = extractTextResponse(transcriptionPayload, "");
     const targetName = resolveLanguageName(targetLanguage);
 
-    const summaryResponse = await sunbirdPost("/tasks/sunflower_simple", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        instruction: `Summarize the following text concisely:\n\n${transcript}`,
-        model_type: "qwen",
-        temperature: 0.3,
-      }),
+    const summaryResponse = await sunbirdFormPost("/tasks/sunflower_simple", {
+      instruction: `Summarize the following text concisely:\n\n${transcript}`,
+      model_type: "qwen",
+      temperature: "0.3",
     });
 
     if (!summaryResponse.ok) {
       const errorData = await summaryResponse.text();
       return NextResponse.json(
-        { error: errorData || 'Failed to summarize transcript' },
-        { status: summaryResponse.status }
+        { error: errorData || "Failed to summarize transcript" },
+        { status: summaryResponse.status },
       );
     }
 
     const summaryPayload = await summaryResponse.json();
-    const summary = extractTextResponse(summaryPayload, transcript.slice(0, 100));
+    const summary = extractTextResponse(
+      summaryPayload,
+      transcript.slice(0, 100),
+    );
 
-    const translationResponse = await sunbirdPost("/tasks/sunflower_simple", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const translationResponse = await sunbirdFormPost(
+      "/tasks/sunflower_simple",
+      {
         instruction: `Translate '${summary}' to ${targetName}`,
         model_type: "qwen",
-        temperature: 0.1,
-      }),
-    });
+        temperature: "0.1",
+      },
+    );
 
     if (!translationResponse.ok) {
       const errorData = await translationResponse.text();
       return NextResponse.json(
-        { error: errorData || 'Failed to translate transcript' },
-        { status: translationResponse.status }
+        { error: errorData || "Failed to translate transcript" },
+        { status: translationResponse.status },
       );
     }
 
@@ -94,8 +93,8 @@ export async function POST(request: NextRequest) {
     if (!ttsResponse.ok) {
       const errorData = await ttsResponse.text();
       return NextResponse.json(
-        { error: errorData || 'Failed to generate audio' },
-        { status: ttsResponse.status }
+        { error: errorData || "Failed to generate audio" },
+        { status: ttsResponse.status },
       );
     }
 
@@ -112,10 +111,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error processing audio:', error);
+    console.error("Error processing audio:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to process audio' },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to process audio",
+      },
+      { status: 500 },
     );
   }
 }

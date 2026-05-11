@@ -9,7 +9,9 @@ const LANGUAGE_NAMES: Record<string, string> = {
 };
 
 export function getSunbirdToken() {
-  return process.env.SUNBIRD_API_TOKEN || process.env.NEXT_PUBLIC_SUNBIRD_API_TOKEN;
+  return (
+    process.env.SUNBIRD_API_TOKEN || process.env.NEXT_PUBLIC_SUNBIRD_API_TOKEN
+  );
 }
 
 export function resolveLanguageName(targetLanguage: string) {
@@ -71,5 +73,20 @@ export async function sunbirdPost(path: string, init: RequestInit = {}) {
   return fetch(`${SUNBIRD_BASE_URL}${path}`, {
     ...init,
     headers,
+  });
+}
+
+export async function sunbirdFormPost(
+  path: string,
+  fields: Record<string, string>,
+) {
+  const body = new URLSearchParams(fields);
+
+  return sunbirdPost(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
   });
 }

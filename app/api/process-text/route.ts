@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractTextResponse, resolveLanguageName, sunbirdPost } from "../sunbird";
+import {
+  extractTextResponse,
+  resolveLanguageName,
+  sunbirdFormPost,
+  sunbirdPost,
+} from "../sunbird";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,23 +13,17 @@ export async function POST(request: NextRequest) {
 
     if (!text || !target_language) {
       return NextResponse.json(
-        { error: 'Missing required fields: text, target_language' },
-        { status: 400 }
+        { error: "Missing required fields: text, target_language" },
+        { status: 400 },
       );
     }
 
     const summaryResponse =
       text.length > 100
-        ? await sunbirdPost("/tasks/sunflower_simple", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              instruction: `Summarize the following text concisely:\n\n${text}`,
-              model_type: "qwen",
-              temperature: 0.3,
-            }),
+        ? await sunbirdFormPost("/tasks/sunflower_simple", {
+            instruction: `Summarize the following text concisely:\n\n${text}`,
+            model_type: "qwen",
+            temperature: "0.3",
           })
         : null;
 
@@ -32,34 +31,33 @@ export async function POST(request: NextRequest) {
       const errorData = await summaryResponse.text();
       return NextResponse.json(
         { error: errorData || "Failed to summarize text" },
-        { status: summaryResponse.status }
+        { status: summaryResponse.status },
       );
     }
 
-    const summaryPayload = summaryResponse ? await summaryResponse.json() : null;
+    const summaryPayload = summaryResponse
+      ? await summaryResponse.json()
+      : null;
     const summary = summaryResponse
       ? extractTextResponse(summaryPayload, text.slice(0, 100))
       : text;
 
     const targetName = resolveLanguageName(target_language);
 
-    const translationResponse = await sunbirdPost("/tasks/sunflower_simple", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const translationResponse = await sunbirdFormPost(
+      "/tasks/sunflower_simple",
+      {
         instruction: `Translate '${summary}' to ${targetName}`,
         model_type: "qwen",
-        temperature: 0.1,
-      }),
-    });
+        temperature: "0.1",
+      },
+    );
 
     if (!translationResponse.ok) {
       const errorData = await translationResponse.text();
       return NextResponse.json(
         { error: errorData || "Failed to translate text" },
-        { status: translationResponse.status }
+        { status: translationResponse.status },
       );
     }
 
@@ -81,7 +79,7 @@ export async function POST(request: NextRequest) {
       const errorData = await ttsResponse.text();
       return NextResponse.json(
         { error: errorData || "Failed to generate audio" },
-        { status: ttsResponse.status }
+        { status: ttsResponse.status },
       );
     }
 
@@ -97,10 +95,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error processing text:', error);
+    console.error("Error processing text:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to process text' },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to process text",
+      },
+      { status: 500 },
     );
   }
 }

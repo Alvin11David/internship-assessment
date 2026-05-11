@@ -90,3 +90,16 @@ export async function sunbirdFormPost(
     body,
   });
 }
+
+export async function sunbirdJsonPost(
+  path: string,
+  payload: Record<string, unknown>,
+) {
+  return sunbirdPost(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}

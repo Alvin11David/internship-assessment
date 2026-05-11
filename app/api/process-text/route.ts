@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   extractTextResponse,
   resolveLanguageName,
-  sunbirdJsonPost,
+  sunbirdFormPost,
   sunbirdPost,
 } from "../sunbird";
 
@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
 
     const summaryResponse =
       text.length > 100
-        ? await sunbirdJsonPost("/tasks/sunflower_simple", {
+        ? await sunbirdFormPost("/tasks/sunflower_simple", {
             instruction: `Summarize the following text concisely:\n\n${text}`,
             model_type: "qwen",
-            temperature: 0.3,
+            temperature: "0.3",
           })
         : null;
 
@@ -44,12 +44,12 @@ export async function POST(request: NextRequest) {
 
     const targetName = resolveLanguageName(target_language);
 
-    const translationResponse = await sunbirdJsonPost(
+    const translationResponse = await sunbirdFormPost(
       "/tasks/sunflower_simple",
       {
         instruction: `Translate '${summary}' to ${targetName}`,
         model_type: "qwen",
-        temperature: 0.1,
+        temperature: "0.1",
       },
     );
 

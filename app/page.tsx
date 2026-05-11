@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { gsap } from "gsap";
 
 interface ProcessResult {
   pipeline: {
@@ -32,6 +33,84 @@ export default function Home() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from(".header", {
+        y: -24,
+        opacity: 0,
+        duration: 0.7,
+      })
+        .from(
+          ".main-content .card",
+          {
+            y: 36,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.12,
+          },
+          "-=0.35",
+        )
+        .from(
+          ".button",
+          {
+            scale: 0.97,
+            opacity: 0,
+            duration: 0.4,
+          },
+          "-=0.3",
+        );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current || !result || result.error) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.from(".results .result-section", {
+        y: 22,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: "power2.out",
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [result]);
+
+  useEffect(() => {
+    if (!containerRef.current || !dropdownOpen) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".dropdown-menu",
+        { y: -8, opacity: 0, scaleY: 0.96, transformOrigin: "top center" },
+        { y: 0, opacity: 1, scaleY: 1, duration: 0.22, ease: "power2.out" },
+      );
+      gsap.from(".dropdown-option", {
+        x: -8,
+        opacity: 0,
+        stagger: 0.03,
+        duration: 0.16,
+        ease: "power1.out",
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [dropdownOpen]);
 
   // Initialize theme from localStorage and system preference
   useEffect(() => {
@@ -133,7 +212,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container">
+    <div className="container" ref={containerRef}>
       <div className="header">
         <button
           className="theme-toggle"

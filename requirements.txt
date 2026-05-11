@@ -1,4 +1,6 @@
 pytest
 requests
 python-dotenv
+flask
+flask-cors
 

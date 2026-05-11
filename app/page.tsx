@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 interface ProcessResult {
@@ -21,6 +21,27 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize theme from localStorage and system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+    
+    setTheme(initialTheme);
+    document.documentElement.setAttribute("data-theme", initialTheme);
+  }, []);
+
+  // Update localStorage when theme changes
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
 
   const languages = [
     { value: "luganda", label: "Luganda" },
@@ -29,6 +50,20 @@ export default function Home() {
     { value: "lugbara", label: "Lugbara" },
     { value: "acholi", label: "Acholi" },
   ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [dropdownOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -86,6 +121,9 @@ export default function Home() {
   return (
     <div className="container">
       <div className="header">
+        <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+          {theme === "dark" ? "☀️" : "🌙"}
+        </button>
         <h1>🌻 Sunbird AI GenAI App</h1>
         <p>Text/Audio → Summarize → Translate → Audio Output</p>
       </div>
@@ -146,19 +184,35 @@ export default function Home() {
           )}
 
           <div className="input-group">
-            <label htmlFor="language">Translate to:</label>
-            <select
-              id="language"
-              value={targetLanguage}
-              onChange={(e) => setTargetLanguage(e.target.value)}
-              disabled={loading}
-            >
-              {languages.map((lang) => (
-                <option key={lang.value} value={lang.value}>
-                  {lang.label}
-                </option>
-              ))}
-            </select>
+            <label>Translate to:</label>
+            <div className="custom-dropdown" ref={dropdownRef}>
+              <button
+                className="dropdown-button"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                disabled={loading}
+              >
+                {languages.find((l) => l.value === targetLanguage)?.label}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              {dropdownOpen && (
+                <div className="dropdown-menu">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.value}
+                      className={`dropdown-option ${
+                        targetLanguage === lang.value ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setTargetLanguage(lang.value);
+                        setDropdownOpen(false);
+                      }}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <button
@@ -185,15 +239,15 @@ export default function Home() {
         {/* Information Section */}
         <div className="card">
           <h2>ℹ️ How it works</h2>
-          <div style={{ lineHeight: "1.8", color: "#666" }}>
-            <h4 style={{ color: "#333", marginTop: "10px" }}>
+          <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
               Text Input Pipeline:
             </h4>
             <p>1. Summarize the text</p>
             <p>2. Translate summary to selected language</p>
             <p>3. Generate audio of translation</p>
 
-            <h4 style={{ color: "#333", marginTop: "15px" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
               Audio Input Pipeline:
             </h4>
             <p>1. Transcribe audio to text</p>
@@ -201,13 +255,13 @@ export default function Home() {
             <p>3. Translate summary to selected language</p>
             <p>4. Generate audio of translation</p>
 
-            <h4 style={{ color: "#333", marginTop: "15px" }}>
+            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
               Supported Languages:
             </h4>
             <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
 
-            <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "#999" }}>
-              ✨ Powered by <strong>Sunbird AI</strong> APIs
+            <p style={{ marginTop: "15px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+              Powered by <strong>Sunbird AI</strong> APIs
             </p>
           </div>
         </div>

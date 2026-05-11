@@ -1,0 +1,16 @@
+[project]
+name = "sunbird-ai-app"
+version = "1.0.0"
+description = "Sunbird AI internship assessment app"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "requests",
+  "python-dotenv",
+  "flask",
+  "flask-cors"
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

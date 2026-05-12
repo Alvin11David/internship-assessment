@@ -231,7 +231,8 @@ export default function Home() {
           <div className="card input-card">
             <img
               src={
-                inputType === "text" && (isTextareaActive || textInput.trim().length > 0)
+                inputType === "text" &&
+                (isTextareaActive || textInput.trim().length > 0)
                   ? "/logo/typing.png"
                   : "/logo/AI_Robot.png"
               }

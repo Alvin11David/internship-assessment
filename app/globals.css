@@ -176,7 +176,7 @@ body::after {
 
 @media (max-width: 700px) {
   .download-badge {
-    width: clamp(160px, 34vw, 320px);
+    width: clamp(600px, 34vw, 400px);
     margin: 8px auto 12px;
   }
 }

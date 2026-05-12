@@ -1,6 +1,5 @@
 # Sunbird AI Internship Assessment Exercise
 
-
 This assessment consists of 3 parts:
 
 1. ✅ **Programming exercises** — implement `collatz()` and `distinct_numbers()` functions
@@ -9,11 +8,11 @@ This assessment consists of 3 parts:
 
 ## Quick Status
 
-| Part                                 | Status             | Notes                                      |
-| ------------------------------------ | ------------------ | ------------------------------------------ |
-| Part 1: Programming Exercises        | ✅ **Complete**    | All tests passing (5/5)                    |
-| Part 2: GenAI App (Next.js + Python) | ✅ **Complete**    | See [PROJECT_README.md](PROJECT_README.md) |
-| Part 3: Deployment                   | 📋 **In Progress** | See deployment steps below                 |
+| Part                                 | Status          | Notes                                                                                               |
+| ------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------- |
+| Part 1: Programming Exercises        | ✅ **Complete** | All tests passing (5/5)                                                                             |
+| Part 2: GenAI App (Next.js + Python) | ✅ **Complete** | See [PROJECT_README.md](PROJECT_README.md)                                                          |
+| Part 3: Deployment                   | ✅ **Complete** | Live app: [internship-assessment-steel.vercel.app](https://internship-assessment-steel.vercel.app/) |
 
 ---
 
@@ -235,7 +234,7 @@ Vercel will:
 1. Build Next.js frontend
 2. Install Python dependencies from `requirements.txt`
 3. Deploy Python API functions to serverless runtime
-4. Provide a live URL: `https://internship-assessment-xxxxx.vercel.app`
+4. Provide a live URL: [https://internship-assessment-steel.vercel.app/](https://internship-assessment-steel.vercel.app/)
 
 #### Step 5: Test Live App
 
@@ -266,12 +265,14 @@ If you prefer a simpler UI framework, Hugging Face Spaces is excellent:
 
 ## Submission Checklist ✅
 
-- [ ] Part 1: All 5 tests passing
-- [ ] Part 2: Application code complete (Next.js + Python backend)
-- [ ] Part 3: Updated README with setup instructions
-- [ ] Part 3: Environment variables documented in `.env.example`
-- [ ] Part 3: Code deployed and live (Vercel or Hugging Face)
-- [ ] Part 3: Deployment link added to this README
+- [x] Part 1: All 5 tests passing
+- [x] Part 2: Application code complete (Next.js + Python backend)
+- [x] Part 3: Updated README with setup instructions
+- [x] Part 3: Environment variables documented in `.env.example`
+- [x] Part 3: Code deployed and live (Vercel or Hugging Face)
+- [x] Part 3: Deployment link added to this README
+
+Live deployment: [https://internship-assessment-steel.vercel.app/](https://internship-assessment-steel.vercel.app/)
 
 ---
 
@@ -348,5 +349,5 @@ For detailed information on Part 2 (application features, usage, architecture):
 
 ---
 
-**Last Updated**: May 9, 2026  
-**Assessment Status**: 🟢 In Progress (Parts 1 & 2 Complete, Part 3 Pending Deployment)
+**Last Updated**: May 12, 2026  
+**Assessment Status**: 🟢 Complete (Parts 1, 2, and 3 done)

@@ -156,7 +156,7 @@ body::after {
   /* make the badge part of the document flow so it scrolls with the page */
   position: static;
   display: block;
-  margin: 28px auto 0;
+  margin: 1px auto 0;
   width: clamp(220px, 26vw, 460px);
   max-width: 720px;
   height: auto;
@@ -177,14 +177,14 @@ body::after {
 @media (max-width: 700px) {
   .download-badge {
     width: clamp(160px, 34vw, 320px);
-    margin: 20px auto 12px;
+    margin: 8px auto 12px;
   }
 }
 
 @media (max-width: 420px) {
   .download-badge {
-    width: clamp(120px, 40vw, 220px);
-    margin: 14px auto 10px;
+    width: clamp(400px, 40vw, 320px);
+    margin: 5px auto 10px;
   }
 }
 

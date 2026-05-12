@@ -239,7 +239,7 @@ export default function Home() {
               alt="AI Robot"
               className="input-robot"
             />
-            <h2>📝 Input</h2>
+            <h2>Input</h2>
 
             <div className="input-group">
               <label>Choose Input Type:</label>
@@ -358,7 +358,7 @@ export default function Home() {
 
           {/* Information Section */}
           <div className="card">
-            <h2>ℹ️ How it works</h2>
+            <h2>How it works</h2>
             <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
               <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
                 Text Input Pipeline:

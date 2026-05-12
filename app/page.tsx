@@ -32,6 +32,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [isTextareaActive, setIsTextareaActive] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -211,244 +212,267 @@ export default function Home() {
   };
 
   return (
-    <div className="container" ref={containerRef}>
-      <div className="header">
-        <button
-          className="theme-toggle"
-          onClick={toggleTheme}
-          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-        >
-          {theme === "dark" ? "☀️" : "🌙"}
-        </button>
-        <h1>🌻 Sunbird AI GenAI App</h1>
-        <p>Text/Audio → Summarize → Translate → Audio Output</p>
-      </div>
+    <div className="page-wrapper">
+      <div className="container" ref={containerRef}>
+        <div className="header">
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+          <h1>🌻 Sunbird AI GenAI App</h1>
+          <p>Text/Audio → Summarize → Translate → Audio Output</p>
+        </div>
 
-      <div className="main-content">
-        {/* Input Section */}
-        <div className="card">
-          <h2>📝 Input</h2>
+        <div className="main-content">
+          {/* Input Section */}
+          <div className="card input-card">
+            <img
+              src={
+                inputType === "text" && (isTextareaActive || textInput.trim().length > 0)
+                  ? "/logo/typing.png"
+                  : "/logo/AI_Robot.png"
+              }
+              alt="AI Robot"
+              className="input-robot"
+            />
+            <h2>📝 Input</h2>
 
-          <div className="input-group">
-            <label>Choose Input Type:</label>
-            <div className="tabs">
-              <button
-                className={`tab-button ${inputType === "text" ? "active" : ""}`}
-                onClick={() => setInputType("text")}
-              >
-                Text
-              </button>
-              <button
-                className={`tab-button ${inputType === "audio" ? "active" : ""}`}
-                onClick={() => setInputType("audio")}
-              >
-                Audio
-              </button>
-            </div>
-          </div>
-
-          {inputType === "text" ? (
             <div className="input-group">
-              <label htmlFor="text">Enter text to process:</label>
-              <textarea
-                id="text"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Paste or type your text here..."
-                disabled={loading}
-              />
+              <label>Choose Input Type:</label>
+              <div className="tabs">
+                <button
+                  className={`tab-button ${inputType === "text" ? "active" : ""}`}
+                  onClick={() => setInputType("text")}
+                >
+                  Text
+                </button>
+                <button
+                  className={`tab-button ${inputType === "audio" ? "active" : ""}`}
+                  onClick={() => setInputType("audio")}
+                >
+                  Audio
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="input-group">
-              <label htmlFor="audio">Upload audio file (max 5 min):</label>
-              <div className="file-input-wrapper">
-                <input
-                  id="audio"
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleFileChange}
+
+            {inputType === "text" ? (
+              <div className="input-group">
+                <label htmlFor="text">Enter text to process:</label>
+                <textarea
+                  id="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onFocus={() => setIsTextareaActive(true)}
+                  onBlur={() => setIsTextareaActive(false)}
+                  placeholder="Paste or type your text here..."
                   disabled={loading}
                 />
-                <label htmlFor="audio" className="file-input-label">
-                  Click to select audio file
-                </label>
               </div>
-              {audioFile && (
-                <div className="file-name">
-                  <span>📁 {audioFile.name}</span>
-                  <button
-                    className="file-delete-btn"
-                    onClick={() => setAudioFile(null)}
-                    title="Delete audio file"
-                    type="button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="input-group">
-            <label>Translate to:</label>
-            <div className="custom-dropdown" ref={dropdownRef}>
-              <button
-                className="dropdown-button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                disabled={loading}
-              >
-                {languages.find((l) => l.value === targetLanguage)?.label}
-                <span className="dropdown-arrow">▼</span>
-              </button>
-              {dropdownOpen && (
-                <div className="dropdown-menu">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.value}
-                      className={`dropdown-option ${
-                        targetLanguage === lang.value ? "active" : ""
-                      }`}
-                      onClick={() => {
-                        setTargetLanguage(lang.value);
-                        setDropdownOpen(false);
-                      }}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <button
-            className="button"
-            onClick={handleProcess}
-            disabled={
-              loading ||
-              (!textInput.trim() && inputType === "text") ||
-              (!audioFile && inputType === "audio")
-            }
-          >
-            {loading ? (
-              <>
-                <span className="loading"></span> Processing...
-              </>
             ) : (
-              "▶ Process"
-            )}
-          </button>
-
-          {error && <div className="error">❌ {error}</div>}
-        </div>
-
-        {/* Information Section */}
-        <div className="card">
-          <h2>ℹ️ How it works</h2>
-          <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
-            <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
-              Text Input Pipeline:
-            </h4>
-            <p>1. Summarize the text</p>
-            <p>2. Translate summary to selected language</p>
-            <p>3. Generate audio of translation</p>
-
-            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
-              Audio Input Pipeline:
-            </h4>
-            <p>1. Transcribe audio to text</p>
-            <p>2. Summarize transcript</p>
-            <p>3. Translate summary to selected language</p>
-            <p>4. Generate audio of translation</p>
-
-            <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
-              Supported Languages:
-            </h4>
-            <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
-
-            <p
-              style={{
-                marginTop: "15px",
-                fontSize: "0.9rem",
-                color: "var(--text-muted)",
-              }}
-            >
-              Powered by <strong>Sunbird AI</strong> APIs
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Results Section */}
-      {result && !result.error && (
-        <div className="results">
-          {result.warning && (
-            <div className="result-section">
-              <h3>⚠️ Notice</h3>
-              <div className="result-text">{result.warning}</div>
-            </div>
-          )}
-
-          {result.timings && (
-            <div className="result-section">
-              <h3>⏱️ Timings</h3>
-              <div className="result-text">
-                <div>
-                  Transcription: {result.timings.transcriptionTimeMs ?? 0} ms
+              <div className="input-group">
+                <label htmlFor="audio">Upload audio file (max 5 min):</label>
+                <div className="file-input-wrapper">
+                  <input
+                    id="audio"
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleFileChange}
+                    disabled={loading}
+                  />
+                  <label htmlFor="audio" className="file-input-label">
+                    Click to select audio file
+                  </label>
                 </div>
-                <div>Summary: {result.timings.summaryTimeMs ?? 0} ms</div>
-                <div>
-                  Translation: {result.timings.translationTimeMs ?? 0} ms
-                </div>
-                <div>TTS: {result.timings.ttsTimeMs ?? 0} ms</div>
-                <div>Total: {result.timings.totalTimeMs ?? 0} ms</div>
+                {audioFile && (
+                  <div className="file-name">
+                    <span>📁 {audioFile.name}</span>
+                    <button
+                      className="file-delete-btn"
+                      onClick={() => setAudioFile(null)}
+                      title="Delete audio file"
+                      type="button"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {result.pipeline.transcript && (
-            <div className="result-section">
-              <h3>🎤 Transcript</h3>
-              <div className="result-text">{result.pipeline.transcript}</div>
-            </div>
-          )}
-
-          {result.pipeline.summary && (
-            <div className="result-section">
-              <h3>📋 Summary</h3>
-              <div className="result-text">{result.pipeline.summary}</div>
-            </div>
-          )}
-
-          {result.pipeline.translation && (
-            <div className="result-section">
-              <h3>🌐 Translation</h3>
-              <div className="result-text">{result.pipeline.translation}</div>
-            </div>
-          )}
-
-          {result.pipeline.audio && (
-            <div className="result-section">
-              <h3>🔊 Audio Output</h3>
-              <div className="audio-player">
-                {result.pipeline.audio.audio_url ? (
-                  <audio controls>
-                    <source
-                      src={result.pipeline.audio.audio_url}
-                      type="audio/mpeg"
-                    />
-                    Your browser does not support the audio element.
-                  </audio>
-                ) : (
-                  <p style={{ color: "#999" }}>
-                    Audio generated (check console for details)
-                  </p>
+            <div className="input-group">
+              <label>Translate to:</label>
+              <div className="custom-dropdown" ref={dropdownRef}>
+                <button
+                  className="dropdown-button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  disabled={loading}
+                >
+                  {languages.find((l) => l.value === targetLanguage)?.label}
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+                {dropdownOpen && (
+                  <div className="dropdown-menu">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.value}
+                        className={`dropdown-option ${
+                          targetLanguage === lang.value ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setTargetLanguage(lang.value);
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
-          )}
+
+            <button
+              className="button"
+              onClick={handleProcess}
+              disabled={
+                loading ||
+                (!textInput.trim() && inputType === "text") ||
+                (!audioFile && inputType === "audio")
+              }
+            >
+              {loading ? (
+                <>
+                  <span className="loading"></span> Processing...
+                </>
+              ) : (
+                "▶ Process"
+              )}
+            </button>
+
+            {error && <div className="error">❌ {error}</div>}
+          </div>
+
+          {/* Information Section */}
+          <div className="card">
+            <h2>ℹ️ How it works</h2>
+            <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
+              <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
+                Text Input Pipeline:
+              </h4>
+              <p>1. Summarize the text</p>
+              <p>2. Translate summary to selected language</p>
+              <p>3. Generate audio of translation</p>
+
+              <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
+                Audio Input Pipeline:
+              </h4>
+              <p>1. Transcribe audio to text</p>
+              <p>2. Summarize transcript</p>
+              <p>3. Translate summary to selected language</p>
+              <p>4. Generate audio of translation</p>
+
+              <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
+                Supported Languages:
+              </h4>
+              <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
+
+              <p
+                style={{
+                  marginTop: "15px",
+                  fontSize: "0.9rem",
+                  color: "var(--text-muted)",
+                }}
+              >
+                Powered by <strong>Sunbird AI</strong> APIs
+              </p>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Results Section */}
+        {result && !result.error && (
+          <div className="results">
+            {result.warning && (
+              <div className="result-section">
+                <h3>⚠️ Notice</h3>
+                <div className="result-text">{result.warning}</div>
+              </div>
+            )}
+
+            {result.timings && (
+              <div className="result-section">
+                <h3>⏱️ Timings</h3>
+                <div className="result-text">
+                  <div>
+                    Transcription: {result.timings.transcriptionTimeMs ?? 0} ms
+                  </div>
+                  <div>Summary: {result.timings.summaryTimeMs ?? 0} ms</div>
+                  <div>
+                    Translation: {result.timings.translationTimeMs ?? 0} ms
+                  </div>
+                  <div>TTS: {result.timings.ttsTimeMs ?? 0} ms</div>
+                  <div>Total: {result.timings.totalTimeMs ?? 0} ms</div>
+                </div>
+              </div>
+            )}
+
+            {result.pipeline.transcript && (
+              <div className="result-section">
+                <h3>🎤 Transcript</h3>
+                <div className="result-text">{result.pipeline.transcript}</div>
+              </div>
+            )}
+
+            {result.pipeline.summary && (
+              <div className="result-section">
+                <h3>📋 Summary</h3>
+                <div className="result-text">{result.pipeline.summary}</div>
+              </div>
+            )}
+
+            {result.pipeline.translation && (
+              <div className="result-section">
+                <h3>🌐 Translation</h3>
+                <div className="result-text">{result.pipeline.translation}</div>
+              </div>
+            )}
+
+            {result.pipeline.audio && (
+              <div className="result-section">
+                <h3>🔊 Audio Output</h3>
+                <div className="audio-player">
+                  {result.pipeline.audio.audio_url ? (
+                    <audio controls>
+                      <source
+                        src={result.pipeline.audio.audio_url}
+                        type="audio/mpeg"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  ) : (
+                    <p style={{ color: "#999" }}>
+                      Audio generated (check console for details)
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <footer className="page-footer">
+        <img
+          className="download-badge"
+          src="/logo/download.png"
+          alt="Download"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = "/logo/logo.png";
+          }}
+        />
+      </footer>
     </div>
   );
 }

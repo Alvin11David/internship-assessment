@@ -23,6 +23,7 @@ interface ProcessResult {
 }
 
 export default function Home() {
+  const MAX_AUDIO_DURATION_SECONDS = 300;
   const [inputType, setInputType] = useState<"text" | "audio">("text");
   const [textInput, setTextInput] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -158,15 +159,43 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files[0]) {
       const file = files[0];
-      // Check file size (5 minutes ≈ ~5MB depending on bitrate)
-      if (file.size > 50 * 1024 * 1024) {
-        setError("Audio file too large. Maximum 5 minutes (~50MB).");
+      const audioUrl = URL.createObjectURL(file);
+
+      try {
+        const durationSeconds = await new Promise<number>((resolve, reject) => {
+          const audio = new Audio();
+          audio.preload = "metadata";
+
+          audio.onloadedmetadata = () => {
+            window.URL.revokeObjectURL(audioUrl);
+            resolve(audio.duration);
+          };
+
+          audio.onerror = () => {
+            window.URL.revokeObjectURL(audioUrl);
+            reject(new Error("Unable to read audio duration"));
+          };
+
+          audio.src = audioUrl;
+        });
+
+        if (durationSeconds > MAX_AUDIO_DURATION_SECONDS) {
+          setAudioFile(null);
+          setError("Audio file too long. Maximum duration is 5 minutes.");
+          e.target.value = "";
+          return;
+        }
+      } catch {
+        setAudioFile(null);
+        setError("Unable to validate the audio file. Please try another file.");
+        e.target.value = "";
         return;
       }
+
       setAudioFile(file);
       setError(null);
     }

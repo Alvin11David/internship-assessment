@@ -389,35 +389,99 @@ export default function Home() {
           <div className="card">
             <h2>How it works</h2>
             <div style={{ lineHeight: "1.8", color: "var(--text-secondary)" }}>
-              <h4 style={{ color: "var(--text-primary)", marginTop: "10px" }}>
-                Text Input Pipeline:
-              </h4>
-              <p>1. Summarize the text</p>
-              <p>2. Translate summary to selected language</p>
-              <p>3. Generate audio of translation</p>
+              <div style={{ marginBottom: "24px" }}>
+                <h4
+                  style={{
+                    color: "var(--sunbird-tertiary)",
+                    marginBottom: "12px",
+                    fontSize: "1.1rem",
+                    fontWeight: "700",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  📝 Text Input Pipeline:
+                </h4>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <p style={{ fontSize: "0.95rem" }}>✓ Summarize the text</p>
+                  <p style={{ fontSize: "0.95rem" }}>
+                    ✓ Translate summary to selected language
+                  </p>
+                  <p style={{ fontSize: "0.95rem" }}>
+                    ✓ Generate audio of translation
+                  </p>
+                </div>
+              </div>
 
-              <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
-                Audio Input Pipeline:
-              </h4>
-              <p>1. Transcribe audio to text</p>
-              <p>2. Summarize transcript</p>
-              <p>3. Translate summary to selected language</p>
-              <p>4. Generate audio of translation</p>
+              <div style={{ marginBottom: "24px" }}>
+                <h4
+                  style={{
+                    color: "var(--sunbird-tertiary)",
+                    marginBottom: "12px",
+                    fontSize: "1.1rem",
+                    fontWeight: "700",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  🎙️ Audio Input Pipeline:
+                </h4>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <p style={{ fontSize: "0.95rem" }}>
+                    ✓ Transcribe audio to text
+                  </p>
+                  <p style={{ fontSize: "0.95rem" }}>✓ Summarize transcript</p>
+                  <p style={{ fontSize: "0.95rem" }}>
+                    ✓ Translate summary to selected language
+                  </p>
+                  <p style={{ fontSize: "0.95rem" }}>
+                    ✓ Generate audio of translation
+                  </p>
+                </div>
+              </div>
 
-              <h4 style={{ color: "var(--text-primary)", marginTop: "15px" }}>
-                Supported Languages:
-              </h4>
-              <p>Luganda, Runyankole, Ateso, Lugbara, Acholi</p>
+              <div style={{ marginBottom: "20px" }}>
+                <h4
+                  style={{
+                    color: "var(--sunbird-tertiary)",
+                    marginBottom: "12px",
+                    fontSize: "1.1rem",
+                    fontWeight: "700",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  🌍 Supported Languages:
+                </h4>
+                <p style={{ fontSize: "0.95rem" }}>
+                  Luganda • Runyankole • Ateso • Lugbara • Acholi
+                </p>
+              </div>
 
-              <p
+              <div
                 style={{
-                  marginTop: "15px",
+                  marginTop: "24px",
+                  paddingTop: "20px",
+                  borderTop: "2px solid rgba(255, 107, 0, 0.2)",
                   fontSize: "0.9rem",
                   color: "var(--text-muted)",
                 }}
               >
-                Powered by <strong>Sunbird AI</strong> APIs
-              </p>
+                ⚡ Powered by{" "}
+                <strong style={{ color: "var(--sunbird-primary)" }}>
+                  Sunbird AI
+                </strong>{" "}
+                APIs
+              </div>
             </div>
           </div>
         </div>
